@@ -284,6 +284,31 @@ module Kaesen
         cancel(h["id"])
       }
     end
+    
+    # Send BTC to Other btc address
+    # @abstract
+    # @param [string] accept_address
+    # @amount [BigDecimal] amount
+    # @return [array]
+    def send_btc(accept_address, amount=BigDecimal.new("0.0"))
+      have_key?
+      address = @url_private + "/api/send_money"
+      body = {
+        "address" => accept_address,
+        "amount" => amount.to_f.round(4),
+      }
+      # body= {
+        
+      # }
+      h = post_ssl_with_sign(address, body)
+      {
+        "success"    => h["success"].to_s,
+        "id"         => h["id"].to_s,
+        "address"    => h["address"].to_s,
+        "amount"     => BigDecimal.new(h["amount"].to_s),
+        "ltimestamp" => Time.now.to_i,
+      }
+    end
 
     private
 
