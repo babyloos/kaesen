@@ -266,7 +266,7 @@ module Kaesen
     #   success: [bool] status
     def cancel(id)
       have_key?
-      address = @url_privat + "/api/exchange/orders/" + id
+      address = @url_private + "/api/exchange/orders/" + id
       body = { }
       h = delete_ssl_with_sign(address, body)
       {
