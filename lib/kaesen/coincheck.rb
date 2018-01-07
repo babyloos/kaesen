@@ -373,29 +373,63 @@ module Kaesen
     end
 
     # Connect to address via https, and return json response.
+    # def get_ssl_with_sign(address,body="")
+    #   uri = URI.parse(address)
+    #   nonce = get_nonce
+    #   headers = get_headers(address, nonce, body)
+
+    #   begin
+    #     req = Net::HTTP::Get.new(uri, headers)
+    #     req.body = body.to_json
+
+    #     https = initialize_https(uri)
+    #     https.start {|w|
+    #       response = w.request(req)
+    #       case response
+    #         when Net::HTTPSuccess
+    #           json = JSON.parse(response.body)
+    #           raise JSONException, response.body if json == nil
+    #           return json
+    #         else
+    #           raise ConnectionFailedException, "Failed to connect to #{@name}: " + response.value
+    #       end
+    #     }
+    #   rescue
+    #     raise
+    #   end
+    # end
+    
     def get_ssl_with_sign(address,body="")
       uri = URI.parse(address)
-      nonce = get_nonce
-      headers = get_headers(address, nonce, body)
-
+      nonce = get_nonce.to_s
+      key = ENV["COINCHECK_KEY"]
+      secret = ENV["COINCHECK_SECRET"]
+      message = nonce + uri.to_s
+      signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha256"), secret, message)
+      headers = {
+        "ACCESS-KEY" => key,
+        "ACCESS-NONCE" => nonce,
+        "ACCESS-SIGNATURE" => signature
+      }
+  
       begin
-        req = Net::HTTP::Get.new(uri, headers)
-        req.body = body.to_json
-
-        https = initialize_https(uri)
-        https.start {|w|
-          response = w.request(req)
-          case response
-            when Net::HTTPSuccess
-              json = JSON.parse(response.body)
-              raise JSONException, response.body if json == nil
-              return json
-            else
-              raise ConnectionFailedException, "Failed to connect to #{@name}: " + response.value
-          end
-        }
+          req = Net::HTTP::Get.new(uri, headers)
+          # req.body = body.to_json
+          
+          https = initialize_https(uri)
+          https.start {|w|
+            response = w.request(req)
+            case response
+              when Net::HTTPSuccess
+                json = JSON.parse(response.body)
+                raise JSONException, response.body if json == nil
+                return json
+              else
+                raise ConnectionFailedException, "Failed to connect to #{@name}: " + response.value
+            end
+          }
       rescue
-        raise
+          raise
       end
     end
 
