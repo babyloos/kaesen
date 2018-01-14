@@ -63,6 +63,7 @@ module Kaesen
 
     # Get order book.
     # @abstract
+    # @params [string] pair 通貨ペア
     # @return [hash] array of market depth
     #   asks: [Array] 売りオーダー
     #      price : [BigDecimal]
@@ -71,8 +72,13 @@ module Kaesen
     #      price : [BigDecimal]
     #      size : [BigDecimal]
     #   ltimestamp: [int] ローカルタイムスタンプ
-    def depth
-      h = get_ssl(@url_public + "/products/5/price_levels") # the id of BTCJPY is 5.
+    def depth(pair)
+      if pair == "btc_jpy"
+        pair_code = "5"
+      elsif pair == "eth_jpy"
+        pair_code = "29"
+      end
+      h = get_ssl(@url_public + "/products/" + pair_code + "/price_levels") # the id of BTCJPY is 5.
       {
         "asks"       => h["buy_price_levels"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
         "bids"       => h["sell_price_levels"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
