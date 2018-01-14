@@ -85,6 +85,86 @@ module Kaesen
         "ltimestamp" => Time.now.to_i,
       }
     end
+    
+    # Bought the amount of Bitcoin at the rate.
+    # 指数注文 買い.
+    # Abstract Method.
+    # @param [string] pair
+    # @param [BigDecimal] rate
+    # @param [BigDecimal] amount
+    # @return [hash] history_order_hash
+    #   success: [String] "true" or "false"
+    #   id: [String] order id at the market
+    #   rate: [BigDecimal] rate should be 5 multiples
+    #   amount: [BigDecimal] minimal amount is 0.0001 BTC
+    #   order_type: [String] "sell" or "buy" + _limit ...etc
+    #   ltimestamp: [int] ローカルタイムスタンプ
+    def buy(pair, rate, amount=BigDecimal.new(0))
+      have_key?
+      address = @url_private + "/orders/"
+      if pair == "btc_jpy"
+        product_id = "5"
+      elsif pair == "eth_jpy"
+        product_id = "29"
+      end
+      body = {
+        "order_type"    => "limit",
+        "product_id"    => product_id,
+        "side"          => "buy",
+        "quantity"      => amount.to_f.round(4),
+        "price"        => rate
+      }
+      h = post_ssl(address, body)
+      result = h ? true : false
+      {
+        "success"    => result,
+        "id"         => h["id"].to_s,
+        "rate"       => BigDecimal.new(h["price"].to_s),
+        "amount"     => BigDecimal.new(h["quantity"].to_s),
+        "order_type" => "buy_" + h["order_type"].to_s,
+        "ltimestamp" => Time.now.to_i,
+      }
+    end
+    
+    # Bought the amount of Bitcoin at the rate.
+    # 指数注文 売り.
+    # Abstract Method.
+    # @param [string] pair
+    # @param [BigDecimal] rate
+    # @param [BigDecimal] amount
+    # @return [hash] history_order_hash
+    #   success: [String] "true" or "false"
+    #   id: [String] order id at the market
+    #   rate: [BigDecimal] rate should be 5 multiples
+    #   amount: [BigDecimal] minimal amount is 0.0001 BTC
+    #   order_type: [String] "sell" or "buy"
+    #   ltimestamp: [int] ローカルタイムスタンプ
+    def sell(pair, rate, amount=BigDecimal.new(0))
+      have_key?
+      address = @url_private + "/orders/"
+      if pair == "btc_jpy"
+        product_id = "5"
+      elsif pair == "eth_jpy"
+        product_id = "29"
+      end
+      body = {
+        "order_type"    => "limit",
+        "product_id"    => product_id,
+        "side"          => "sell",
+        "quantity"      => amount.to_f.round(4),
+        "price"        => rate
+      }
+      h = post_ssl(address, body)
+      result = h ? true : false
+      {
+        "success"    => result,
+        "id"         => h["id"].to_s,
+        "rate"       => BigDecimal.new(h["price"].to_s),
+        "amount"     => BigDecimal.new(h["quantity"].to_s),
+        "order_type" => "sell_" + h["order_type"].to_s,
+        "ltimestamp" => Time.now.to_i,
+      }
+    end
 
     private
 
