@@ -62,7 +62,9 @@ module Kaesen
     end
 
     # Get order book.
-    # @abstract
+    # @args
+    #   pare: [string] 通貨ペア ex: "btc_jpy"
+    # @args [string] 
     # @return [hash] array of market depth
     #   asks: [Array] 売りオーダー
     #      price : [BigDecimal]
@@ -71,8 +73,13 @@ module Kaesen
     #      price : [BigDecimal]
     #      size : [BigDecimal]
     #   ltimestamp: [int] ローカルタイムスタンプ
-    def depth
-      h = get_ssl(@url_public + "/depth/btc_jpy")
+    def depth(pare)
+      if pare == "btc_jpy"
+        pare_code = "btc_jpy"
+      elsif pare == "eth_jpy"
+        pare_code = "eth_jpy"
+      end
+      h = get_ssl(@url_public + "/depth/" + pare_code)
       {
         "asks"       => h["asks"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
         "bids"       => h["bids"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
