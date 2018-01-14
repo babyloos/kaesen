@@ -32,6 +32,7 @@ module Kaesen
     #############################################################
 
     # Get ticker information.
+    # @param  [string] pair 通過ペア
     # @return [hash] ticker
     #   ask: [BigDecimal] 最良売気配値
     #   bid: [BigDecimal] 最良買気配値
@@ -41,8 +42,13 @@ module Kaesen
     #   volume: [BigDecimal] 取引量
     #   ltimestamp: [int] ローカルタイムスタンプ
     #   vwap: [BigDecimal] 過去24時間の加重平均
-    def ticker
-      h = get_ssl(@url_public + "/products/code/CASH/BTCJPY") # the id of BTCJPY is 5.
+    def ticker(pair)
+      if pair == "btc_jpy"
+        pair_code = "BTCJPY"
+      elsif pair == "eth_jpy"
+        pair_code = "ETHJPY"
+      end
+      h = get_ssl(@url_public + "/products/code/CASH/" + pair_code) # the id of BTCJPY is 5.
       {
         "ask"        => BigDecimal.new(h["market_ask"].to_s),
         "bid"        => BigDecimal.new(h["market_bid"].to_s),
