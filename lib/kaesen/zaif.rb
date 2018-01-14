@@ -32,7 +32,7 @@ module Kaesen
 
     # Get ticker information.
     # @args
-    #   pare: [string] 通貨ペア ex: "btc_jpy"
+    #   pair: [string] 通貨ペア ex: "btc_jpy"
     # @return [hash] ticker
     #   ask: [BigDecimal] 最良売気配値
     #   bid: [BigDecimal] 最良買気配値
@@ -42,13 +42,13 @@ module Kaesen
     #   volume: [BigDecimal] 取引量
     #   ltimestamp: [int] ローカルタイムスタンプ
     #   vwap: [BigDecimal] 過去24時間の加重平均
-    def ticker(pare)
-      if pare == "btc_jpy"
-        pare_code = "btc_jpy"
-      elsif pare == "eth_jpy"
-        pare_code = "eth_jpy"
+    def ticker(pair)
+      if pair == "btc_jpy"
+        pair_code = "btc_jpy"
+      elsif pair == "eth_jpy"
+        pair_code = "eth_jpy"
       end
-      h = get_ssl(@url_public + "/ticker/" + pare_code)
+      h = get_ssl(@url_public + "/ticker/" + pair_code)
       {
         "ask"        => BigDecimal.new(h["ask"].to_s),
         "bid"        => BigDecimal.new(h["bid"].to_s),
@@ -63,7 +63,7 @@ module Kaesen
 
     # Get order book.
     # @args
-    #   pare: [string] 通貨ペア ex: "btc_jpy"
+    #   pair: [string] 通貨ペア ex: "btc_jpy"
     # @args [string] 
     # @return [hash] array of market depth
     #   asks: [Array] 売りオーダー
@@ -73,13 +73,13 @@ module Kaesen
     #      price : [BigDecimal]
     #      size : [BigDecimal]
     #   ltimestamp: [int] ローカルタイムスタンプ
-    def depth(pare)
-      if pare == "btc_jpy"
-        pare_code = "btc_jpy"
-      elsif pare == "eth_jpy"
-        pare_code = "eth_jpy"
+    def depth(pair)
+      if pair == "btc_jpy"
+        pair_code = "btc_jpy"
+      elsif pair == "eth_jpy"
+        pair_code = "eth_jpy"
       end
-      h = get_ssl(@url_public + "/depth/" + pare_code)
+      h = get_ssl(@url_public + "/depth/" + pair_code)
       {
         "asks"       => h["asks"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
         "bids"       => h["bids"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
@@ -151,6 +151,7 @@ module Kaesen
     # Bought the amount of Bitcoin at the rate.
     # 指数注文 買い.
     # Abstract Method.
+    # @param [string] pair
     # @param [BigDecimal] rate
     # @param [BigDecimal] amount
     # @return [hash] history_order_hash
@@ -160,13 +161,14 @@ module Kaesen
     #   amount: [BigDecimal] minimal amount is 0.0001 BTC
     #   order_type: [String] "sell" or "buy"
     #   ltimestamp: [int] ローカルタイムスタンプ
-    def buy(rate, amount=BigDecimal.new(0))
+    def buy(pair, rate, amount=BigDecimal.new(0))
       have_key?
       address = @url_private
       rate = (rate.to_i / 5) * 5
+      currency_pair = pair
       body = {
         "method"        => "trade",
-        "currency_pair" => "btc_jpy",
+        "currency_pair" => currency_pair,
         "action"        => "bid",
         "price"         => rate,
         "amount"        => amount.to_f.round(4)
@@ -220,6 +222,7 @@ module Kaesen
     # Sell the amount of Bitcoin at the rate.
     # 指数注文 売り.
     # Abstract Method.
+    # @param [string] pair
     # @param [BigDecimal] rate
     # @param [BigDecimal] amount
     # @return [hash] history_order_hash
@@ -229,13 +232,14 @@ module Kaesen
     #   amount: [BigDecimal] minimal amount is 0.0001 BTC
     #   order_type: [String] "sell" or "buy"
     #   ltimestamp: [int] ローカルタイムスタンプ
-    def sell(rate, amount=BigDecimal.new(0))
+    def sell(pair, rate, amount=BigDecimal.new(0))
       have_key?
       address = @url_private
       rate = (rate.to_i / 5) * 5
+      currency_pair = pair
       body = {
         "method"        => "trade",
-        "currency_pair" => "btc_jpy",
+        "currency_pair" => currency_pair,
         "action" => "ask",
         "price" => rate,
         "amount" => amount.to_f.round(4),
