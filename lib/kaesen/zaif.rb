@@ -62,9 +62,9 @@ module Kaesen
     end
 
     # Get order book.
-    # @args
+    # @param
     #   pair: [string] 通貨ペア ex: "btc_jpy"
-    # @args [string] 
+    # @param [string] 
     # @return [hash] array of market depth
     #   asks: [Array] 売りオーダー
     #      price : [BigDecimal]
