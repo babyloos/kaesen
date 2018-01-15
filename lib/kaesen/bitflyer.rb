@@ -35,6 +35,7 @@ module Kaesen
     #############################################################
 
     # Get ticker information.
+    # @param [string] pair
     # @return [hash] ticker
     #   ask: [BigDecimal] 最良売気配値
     #   bid: [BigDecimal] 最良買気配値
@@ -44,8 +45,9 @@ module Kaesen
     #   volume: [BigDecimal] 取引量
     #   ltimestamp: [int] ローカルタイムスタンプ
     #   timestamp: [int] タイムスタンプ
-    def ticker
-      h = get_ssl(@url_public + "/getticker?product_code=#{@product_code}")
+    def ticker(pair)
+      product_code = pair.upcase!
+      h = get_ssl(@url_public + "/getticker?product_code=#{product_code}")
       {
         "ask"        => BigDecimal.new(h["best_ask"].to_s),
         "bid"        => BigDecimal.new(h["best_bid"].to_s),
