@@ -40,7 +40,7 @@ module Kaesen
     #   volume: [BigDecimal] 取引量
     #   ltimestamp: [int] ローカルタイムスタンプ
     def ticker(pair)
-      if pair == "btc_jpy"
+      if pair != "btc_jpy"
         raise "btc_jpy以外のペアには対応していません"
       end
       h = get_ssl(@url_public + "/ticker")
