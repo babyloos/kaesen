@@ -30,6 +30,7 @@ module Kaesen
     #############################################################
 
     # Get ticker information.
+    # @param [string] pair
     # @return [hash] ticker
     #   ask: [BigDecimal] 最良売気配値
     #   bid: [BigDecimal] 最良買気配値
@@ -39,16 +40,16 @@ module Kaesen
     #   volume: [BigDecimal] 取引量
     #   timestamp: [int] タイムスタンプ
     #   ltimestamp: [int] ローカルタイムスタンプ
-    def ticker
-      h = get_ssl(@url_public + "/btc_jpy/ticker")
+    def ticker(pair)
+      h = get_ssl(@url_public + "/" + pair + "/ticker")
       h = h["data"]
       {
-        "ask"        => BigDecimal.new(h["sell"][0]),
-        "bid"        => BigDecimal.new(h["buy"][0]),
-        "last"       => BigDecimal.new(h["last"][0]),
-        "high"       => BigDecimal.new(h["high"][1]), # of the previous 24 hours
-        "low"        => BigDecimal.new(h["low"][1]), # of the previous 24 hours
-        "volume"     => BigDecimal.new(h["vol"][1]), # of the previous 24 hours
+        "ask"        => BigDecimal.new(h["sell"]),
+        "bid"        => BigDecimal.new(h["buy"]),
+        "last"       => BigDecimal.new(h["last"]),
+        "high"       => BigDecimal.new(h["high"]), # of the previous 24 hours
+        "low"        => BigDecimal.new(h["low"]), # of the previous 24 hours
+        "volume"     => BigDecimal.new(h["vol"]), # of the previous 24 hours
         "ltimestamp" => Time.now.to_i,
         "timestamp"  => h["timestamp"],
       }
