@@ -43,11 +43,7 @@ module Kaesen
     #   ltimestamp: [int] ローカルタイムスタンプ
     #   vwap: [BigDecimal] 過去24時間の加重平均
     def ticker(pair)
-      if pair == "btc_jpy"
-        pair_code = "btc_jpy"
-      elsif pair == "eth_jpy"
-        pair_code = "eth_jpy"
-      end
+      pair_code = pair
       h = get_ssl(@url_public + "/ticker/" + pair_code)
       {
         "ask"        => BigDecimal.new(h["ask"].to_s),
