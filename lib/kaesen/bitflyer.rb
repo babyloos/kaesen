@@ -46,7 +46,7 @@ module Kaesen
     #   ltimestamp: [int] ローカルタイムスタンプ
     #   timestamp: [int] タイムスタンプ
     def ticker(pair)
-      product_code = pair.upcase!
+      product_code = pair.upcase
       h = get_ssl(@url_public + "/getticker?product_code=#{product_code}")
       {
         "ask"        => BigDecimal.new(h["best_ask"].to_s),
