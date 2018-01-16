@@ -44,6 +44,11 @@ module Kaesen
       h = get_ssl(@url_public + "/ticker") # the id of BTCJPY is 5.
       pair_code = pair.gsub(/_/, "")
       h = h[pair_code]
+      if !h
+        h["ask"] = 0.0
+        h["bid"] = 0.0
+        h["last"] = 0.0
+      end
       {
         "ask"        => BigDecimal.new(h["ask"].to_s),
         "bid"        => BigDecimal.new(h["bid"].to_s),
