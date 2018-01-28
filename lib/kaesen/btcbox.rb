@@ -151,6 +151,7 @@ module Kaesen
         "amount" => amount.to_f.round(4),
         "price"  => rate.to_i,
         "type"   => "buy",
+        # "coin" => "eth"
       }
       h = post_ssl_with_sign(address, params)
       {
