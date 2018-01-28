@@ -86,6 +86,35 @@ module Kaesen
       }
     end
     
+    # Get account balance.
+    # @abstract
+    # @return [hash] account_balance_hash
+    #   jpy: [hash]
+    #      amount: [BigDecimal] 総日本円
+    #      available: [BigDecimal] 取引可能な日本円
+    #   btc [hash]
+    #      amount: [BigDecimal] 総BTC
+    #      available: [BigDecimal] 取引可能なBTC
+    #   ltimestamp: [int] ローカルタイムスタンプ
+    def balance
+      have_key?
+      address = @url_private + "/accounts/balance"
+      # body = { "method" => "get_info" }
+      h = get_ssl(address)
+      p h
+      # {
+      #   "jpy"        => {
+      #     "amount"    => BigDecimal.new(h["return"]["deposit"]["jpy"].to_s),
+      #     "available" => BigDecimal.new(h["return"]["funds"]["jpy"].to_s),
+      #   },
+      #   "btc"        => {
+      #     "amount"    => BigDecimal.new(h["return"]["deposit"]["btc"].to_s),
+      #     "available" => BigDecimal.new(h["return"]["funds"]["btc"].to_s),
+      #   },
+      #   "ltimestamp" => Time.now.to_i,
+      # }
+    end
+    
     # Bought the amount of Bitcoin at the rate.
     # 指数注文 買い.
     # Abstract Method.
@@ -106,6 +135,8 @@ module Kaesen
         product_id = "5"
       elsif pair == "eth_jpy"
         product_id = "29"
+      elsif pair == "eth_btc"
+        product_id = "37"
       end
       body = {
         "order_type"    => "limit",
@@ -146,6 +177,8 @@ module Kaesen
         product_id = "5"
       elsif pair == "eth_jpy"
         product_id = "29"
+      elsif pair == "eth_btc"
+        product_id = "37"
       end
       body = {
         "order_type"    => "limit",
