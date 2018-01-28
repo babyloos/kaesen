@@ -156,7 +156,7 @@ module Kaesen
     def buy(pair, rate, amount=BigDecimal.new(0))
       have_key?
       address = @url_private
-      rate = (rate.to_i / 5) * 5
+      # rate = (rate.to_i / 5) * 5
       currency_pair = pair
       body = {
         "method"        => "trade",
@@ -167,14 +167,21 @@ module Kaesen
       }
       h = post_ssl(address, body)
       result = h["success"].to_i == 1 ? "true" : "false"
-      {
-        "success"    => result,
-        "id"         => h["return"]["order_id"].to_s,
-        "rate"       => BigDecimal.new(rate.to_s),
-        "amount"     => BigDecimal.new(amount.to_s),
-        "order_type" => "sell",
-        "ltimestamp" => Time.now.to_i,
-      }
+      if result == "true"
+        {
+          "success"    => result,
+          "id"         => h["return"]["order_id"].to_s,
+          "rate"       => BigDecimal.new(rate.to_s),
+          "amount"     => BigDecimal.new(amount.to_s),
+          "order_type" => "sell",
+          "ltimestamp" => Time.now.to_i,
+        }
+      else
+        {
+          "success"    => result,
+          "error"      => h["error"]
+        }
+      end
     end
 
     # Buy the amount of Bitcoin from the market.
@@ -227,7 +234,7 @@ module Kaesen
     def sell(pair, rate, amount=BigDecimal.new(0))
       have_key?
       address = @url_private
-      rate = (rate.to_i / 5) * 5
+      # rate = (rate.to_i / 5) * 5
       currency_pair = pair
       body = {
         "method"        => "trade",
@@ -238,14 +245,21 @@ module Kaesen
       }
       h = post_ssl(address, body)
       result = h["success"].to_i == 1 ? "true" : "false"
-      {
-        "success"    => result,
-        "id"         => h["return"]["order_id"].to_s,
-        "rate"       => BigDecimal.new(rate.to_s),
-        "amount"     => BigDecimal.new(amount.to_s),
-        "order_type" => "sell",
-        "ltimestamp" => Time.now.to_i,
-      }
+      if result == "true"
+        {
+          "success"    => result,
+          "id"         => h["return"]["order_id"].to_s,
+          "rate"       => BigDecimal.new(rate.to_s),
+          "amount"     => BigDecimal.new(amount.to_s),
+          "order_type" => "sell",
+          "ltimestamp" => Time.now.to_i,
+        }
+      else
+        {
+          "success"    => result,
+          "error"      => h["error"]
+        }
+      end
     end
 
     # Sell the amount of Bitcoin to the market.
