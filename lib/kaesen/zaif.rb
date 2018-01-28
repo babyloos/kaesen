@@ -70,11 +70,7 @@ module Kaesen
     #      size : [BigDecimal]
     #   ltimestamp: [int] ローカルタイムスタンプ
     def depth(pair)
-      if pair == "btc_jpy"
-        pair_code = "btc_jpy"
-      elsif pair == "eth_jpy"
-        pair_code = "eth_jpy"
-      end
+      pair_code = pair
       h = get_ssl(@url_public + "/depth/" + pair_code)
       {
         "asks"       => h["asks"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
