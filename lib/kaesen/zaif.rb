@@ -328,15 +328,16 @@ module Kaesen
     
     # Send BTC to Other btc address
     # @abstract
+    # @param [string] send_currency
     # @param [string] accept_address
     # @amount [BigDecimal] amount
     # @return [array]
-    def send_btc(accept_address, amount=BigDecimal.new("0.0"))
+    def send_btc(send_currency, accept_address, amount=BigDecimal.new("0.0"))
       have_key?
       address = @url_private
       body = {
         "method"        => "withdraw",
-        "currency"      => "btc",
+        "currency"      => send_currency,
         "address"       => accept_address,
         "amount"        => amount.to_f.round(4),
         "opt_fee"       => 0.0001
