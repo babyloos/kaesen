@@ -326,13 +326,13 @@ module Kaesen
       }
     end
     
-    # Send BTC to Other btc address
+    # Send Coin to Other btc address
     # @abstract
     # @param [string] send_currency
     # @param [string] accept_address
     # @amount [BigDecimal] amount
     # @return [array]
-    def send_btc(send_currency, accept_address, amount=BigDecimal.new("0.0"))
+    def send_coin(send_currency, accept_address, amount=BigDecimal.new("0.0"))
       have_key?
       address = @url_private
       body = {
