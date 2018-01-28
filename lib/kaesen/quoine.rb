@@ -7,6 +7,8 @@ require 'bigdecimal'
 module Kaesen
   # Quoine Wrapper Class
   # https://developers.quoine.com/
+  # pair_code一覧
+  # https://api.quoine.com/products/
   ## API制限
   # API users should not make more than 300 requests per 5 minute. Requests go beyond the limit will return with a 429 status 
   
@@ -73,6 +75,8 @@ module Kaesen
         pair_code = "5"
       elsif pair == "eth_jpy"
         pair_code = "29"
+      elsif pair == "eth_btc"
+        pair_code = "37"
       end
       h = get_ssl(@url_public + "/products/" + pair_code + "/price_levels") # the id of BTCJPY is 5.
       {
