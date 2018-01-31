@@ -65,12 +65,39 @@ module Kaesen
     #      price : [BigDecimal]
     #      size : [BigDecimal]
     #   ltimestamp: [int] ローカルタイムスタンプ
-    def depth
-      h = get_ssl(@url_public + "/btc_jpy/depth")
+    def depth(pair)
+      h = get_ssl(@url_public + "/" + pair + "/depth")
       h = h["data"]
       {
         "asks"       => h["asks"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
         "bids"       => h["bids"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
+        "ltimestamp" => Time.now.to_i,
+      }
+    end
+    
+    # Send BTC to Other btc address
+    # @abstract
+    # @param [string] accept_address
+    # @amount [BigDecimal] amount
+    # @return [array]
+    def send_btc(currency, uuid, amount=BigDecimal.new("0.0"))
+      have_key?
+      address = @url_private + "/user/request_withdrawal"
+      body = {
+        "uuid"          => uuid,
+        "currency"      => currency,
+        "amount"        => amount.to_f.round(4),
+        # "sms_token"     => "",
+      }
+      h = post_ssl(address, body)
+      result = h["success"].to_i == 1 ? "true" : "false"
+      {
+        "success"    => result,
+        "id"         => h["return"]["id"].to_s,
+        "amount"     => BigDecimal.new(amount.to_s),
+        "fee"        => h["return"]["fee"].to_s,
+        "funds"      => h["return"]["funds"],
+        "order_type" => "sell",
         "ltimestamp" => Time.now.to_i,
       }
     end

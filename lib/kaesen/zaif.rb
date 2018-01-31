@@ -331,12 +331,12 @@ module Kaesen
     # @param [string] accept_address
     # @amount [BigDecimal] amount
     # @return [array]
-    def send_btc(accept_address, amount=BigDecimal.new("0.0"))
+    def send_btc(currency, accept_address, amount=BigDecimal.new("0.0"))
       have_key?
       address = @url_private
       body = {
         "method"        => "withdraw",
-        "currency"      => "btc",
+        "currency"      => currency,
         "address"       => accept_address,
         "amount"        => amount.to_f.round(4),
         "opt_fee"       => 0.0001
