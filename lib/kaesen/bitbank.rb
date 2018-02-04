@@ -210,7 +210,7 @@ module Kaesen
       uri = URI.parse(address)
 
       begin
-        request = Net::HTTP::Get.new(uri, initheader = headers)
+        request = Net::HTTP::Get.new(uri)
         https = initialize_https(uri)
         https.start {|w|
           response = w.get(uri.request_uri)
