@@ -158,6 +158,30 @@ module Kaesen
         }
       end
     end
+    
+    # 現在の注文情報取得
+    def opens
+      h = @bbcc.read_active_orders('eth_btc')
+      h = JSON.parse(h)
+      success = h["success"] == 1 ? "true" : "false"
+      if !h["data"]["orders"].empty?
+        h["data"]["orders"].map do |order|
+          order_type = order["side"] # when value["action"] is "bid"
+          {
+            "success"    => success,
+            "id"         => order["order_id"],
+            "pair"       => order["pair"],
+            "rate"       => BigDecimal.new(order["price"].to_s),
+            "amount"     => BigDecimal.new(order["start_amount"].to_s),
+            "order_type" => order["type"],
+          }
+        end
+      else
+        {
+          "success"     => success,
+        }
+      end
+    end
 
     private
 
