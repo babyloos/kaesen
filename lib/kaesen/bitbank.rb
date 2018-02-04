@@ -165,6 +165,33 @@ module Kaesen
         "success" => success
       }
     end
+    
+    # 出金アカウント取得
+    def width_draw_acount(currency)
+      have_key?
+      h = @bbcc.read_withdrawal_account(currency)
+      h = JSON.parse(h)
+      return h
+    end
+    
+    # 送金
+    def send_coin(send_currency, uuid, amount=BigDecimal.new(0))
+      have_key?
+      h = @bbcc.request_withdrawal(send_currency, uuid, amount.to_s)
+      h = JSON.parse(h)
+      success = h["success"] == 1 ? "true" : "false"
+      if success == "true"
+        {
+          "success"     => success,
+          "amount"     => BigDecimal.new(amount.to_s),
+          "fee"        => h["data"]["fee"].to_s,
+        }
+      else
+        {
+          "success"     => success,
+        }
+      end
+    end
 
     private
 
