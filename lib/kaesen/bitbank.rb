@@ -101,62 +101,34 @@ module Kaesen
     # @param
     def buy(pair, rate, amount=BigDecimal.new(0))
       have_key?
-      address = @url_private + "/user/spot/order"
-      body = {
-        "pair"        => pair,
-        "amount"      => amount.to_f.round(4),
-        "side"        => "buy",
-        "type"        => "limit",
-        "price"         => rate,
+      h = @bbcc.create_order(pair, amount, rate, 'buy', 'limit')
+      h = JSON.parse(h)
+      success = h["success"] == 1 ? "true" : "false"
+      {
+        "success"     => success,
+        "id"          => h["data"]["order_id"],
+        "rate"       => BigDecimal.new(rate.to_s),
+        "amount"     => BigDecimal.new(amount.to_s),
+        "order_type" => "buy",
+        "ltimestamp" => Time.now.to_i,
       }
-      h = post_ssl(address, body)
-      result = h["success"].to_i == 1 ? "true" : "false"
-      if result == "true"
-        {
-          "success"    => result,
-          "id"         => h["data"]["order_id"].to_s,
-          "rate"       => BigDecimal.new(rate.to_s),
-          "amount"     => BigDecimal.new(amount.to_s),
-          "order_type" => "buy",
-          "ltimestamp" => Time.now.to_i,
-        }
-      else
-        {
-          "success"    => result,
-          "error"      => h["data"]["code"]
-        }
-      end
     end
     
     # sell
     # @param
     def sell(pair, rate, amount=BigDecimal.new(0))
       have_key?
-      address = @url_private + "/user/spot/order"
-      body = {
-        "pair"        => pair,
-        "amount"      => amount.to_f.round(4),
-        "side"        => "sell",
-        "type"        => "limit",
-        "price"         => rate,
+      h = @bbcc.create_order(pair, amount, rate, 'sell', 'limit')
+      h = JSON.parse(h)
+      success = h["success"] == 1 ? "true" : "false"
+      {
+        "success"     => success,
+        "id"          => h["data"]["order_id"],
+        "rate"       => BigDecimal.new(rate.to_s),
+        "amount"     => BigDecimal.new(amount.to_s),
+        "order_type" => "sell",
+        "ltimestamp" => Time.now.to_i,
       }
-      h = post_ssl(address, body)
-      result = h["success"].to_i == 1 ? "true" : "false"
-      if result == "true"
-        {
-          "success"    => result,
-          "id"         => h["data"]["order_id"].to_s,
-          "rate"       => BigDecimal.new(rate.to_s),
-          "amount"     => BigDecimal.new(amount.to_s),
-          "order_type" => "sell",
-          "ltimestamp" => Time.now.to_i,
-        }
-      else
-        {
-          "success"    => result,
-          "error"      => h["data"]["code"]
-        }
-      end
     end
     
     # 現在の注文情報取得
