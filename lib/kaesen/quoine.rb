@@ -198,6 +198,36 @@ module Kaesen
         "ltimestamp" => Time.now.to_i,
       }
     end
+    
+    # Send Coin to Other btc address
+    # @abstract
+    # @param [string] send_currency
+    # @param [string] accept_address
+    # @amount [BigDecimal] amount
+    # @return [array]
+    # def send_coin(send_currency, accept_address, amount=BigDecimal.new("0.0"))
+    #   have_key?
+    #   address = @url_private
+    #   body = {
+    #     "method"        => "withdraw",
+    #     "currency"      => send_currency,
+    #     "address"       => accept_address,
+    #     "amount"        => amount.to_f.round(4),
+    #     "opt_fee"       => 0.0001
+    #   }
+    #   h = post_ssl(address, body)
+    #   result = h["success"].to_i == 1 ? "true" : "false"
+    #   {
+    #     "success"    => result,
+    #     "id"         => h["return"]["id"].to_s,
+    #     "txid"       => h["return"]["txid"].to_s,
+    #     "amount"     => BigDecimal.new(amount.to_s),
+    #     "fee"        => h["return"]["fee"].to_s,
+    #     "funds"      => h["return"]["funds"],
+    #     "order_type" => "sell",
+    #     "ltimestamp" => Time.now.to_i,
+    #   }
+    # end
 
     private
 

@@ -70,7 +70,11 @@ module Kaesen
     #      size : [BigDecimal]
     #   ltimestamp: [int] ローカルタイムスタンプ
     def depth(pair)
-      pair_code = pair
+      if pair == "btc_jpy"
+        pair_code = "btc_jpy"
+      elsif pair == "eth_jpy"
+        pair_code = "eth_jpy"
+      end
       h = get_ssl(@url_public + "/depth/" + pair_code)
       {
         "asks"       => h["asks"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
@@ -106,6 +110,10 @@ module Kaesen
         "btc"        => {
           "amount"    => BigDecimal.new(h["return"]["deposit"]["btc"].to_s),
           "available" => BigDecimal.new(h["return"]["funds"]["btc"].to_s),
+        },
+        "eth"        => {
+          "amount"    => BigDecimal.new(h["return"]["deposit"]["ETH"].to_s),
+          "available" => BigDecimal.new(h["return"]["funds"]["ETH"].to_s),
         },
         "ltimestamp" => Time.now.to_i,
       }
@@ -344,14 +352,14 @@ module Kaesen
       }
       h = post_ssl(address, body)
       result = h["success"].to_i == 1 ? "true" : "false"
+      p h
       {
         "success"    => result,
-        "id"         => h["return"]["id"].to_s,
+        "id"         => h["return"]["id"].to_s, 
         "txid"       => h["return"]["txid"].to_s,
         "amount"     => BigDecimal.new(amount.to_s),
         "fee"        => h["return"]["fee"].to_s,
         "funds"      => h["return"]["funds"],
-        "order_type" => "sell",
         "ltimestamp" => Time.now.to_i,
       }
     end
