@@ -3,6 +3,7 @@ require 'net/http'
 require 'openssl'
 require 'json'
 require 'bigdecimal'
+require 'ruby_bitbankcc'
 
 module Kaesen
   # Bitbank Wrapper Class
@@ -18,6 +19,8 @@ module Kaesen
       @api_secret  = ENV["BITBANK_SECRET"]
       @url_public  = "https://public.bitbank.cc"
       @url_private = "https://api.bitbank.cc/v1"
+      
+      @bbcc = Bitbankcc.new(@api_key, @api_secret)
 
       options.each do |key, value|
         instance_variable_set("@#{key}", value)
@@ -28,6 +31,24 @@ module Kaesen
     #############################################################
     # API for public information
     #############################################################
+    
+    def balance
+      h = @bbcc.read_balance
+      h = JSON.parse(h)
+      assets = h["data"]["assets"]
+      asset_datas = {}
+      assets.each do |a|
+        if !a["asset"].empty?
+          # p a["asset"]
+          currency = a["asset"]
+          asset_datas[currency] = {}
+          BigDecimal.new(h["ask"].to_s)
+          asset_datas[currency]["amount"] = BigDecimal.new(a["onhand_amount"].to_s)
+          asset_datas[currency]["available"] = BigDecimal.new(a["free_amount"].to_s)
+        end
+      end
+      asset_datas
+    end
 
     # Get ticker information.
     # @param [string] pair
@@ -57,6 +78,7 @@ module Kaesen
 
     # Get order book.
     # @abstract
+    # @param [String] pair
     # @return [hash] array of market depth
     #   asks: [Array] 売りオーダー
     #      price : [BigDecimal]
@@ -65,14 +87,76 @@ module Kaesen
     #      price : [BigDecimal]
     #      size : [BigDecimal]
     #   ltimestamp: [int] ローカルタイムスタンプ
-    def depth
-      h = get_ssl(@url_public + "/btc_jpy/depth")
+    def depth(pair)
+      h = get_ssl(@url_public + "/" + pair + "/depth")
       h = h["data"]
       {
         "asks"       => h["asks"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
         "bids"       => h["bids"].map{|a,b| [BigDecimal.new(a.to_s), BigDecimal.new(b.to_s)]}, # to_s でないと誤差が生じる
         "ltimestamp" => Time.now.to_i,
       }
+    end
+    
+    # buy
+    # @param
+    def buy(pair, rate, amount=BigDecimal.new(0))
+      have_key?
+      address = @url_private + "/user/spot/order"
+      body = {
+        "pair"        => pair,
+        "amount"      => amount.to_f.round(4),
+        "side"        => "buy",
+        "type"        => "limit",
+        "price"         => rate,
+      }
+      h = post_ssl(address, body)
+      result = h["success"].to_i == 1 ? "true" : "false"
+      if result == "true"
+        {
+          "success"    => result,
+          "id"         => h["data"]["order_id"].to_s,
+          "rate"       => BigDecimal.new(rate.to_s),
+          "amount"     => BigDecimal.new(amount.to_s),
+          "order_type" => "buy",
+          "ltimestamp" => Time.now.to_i,
+        }
+      else
+        {
+          "success"    => result,
+          "error"      => h["data"]["code"]
+        }
+      end
+    end
+    
+    # sell
+    # @param
+    def sell(pair, rate, amount=BigDecimal.new(0))
+      have_key?
+      address = @url_private + "/user/spot/order"
+      body = {
+        "pair"        => pair,
+        "amount"      => amount.to_f.round(4),
+        "side"        => "sell",
+        "type"        => "limit",
+        "price"         => rate,
+      }
+      h = post_ssl(address, body)
+      result = h["success"].to_i == 1 ? "true" : "false"
+      if result == "true"
+        {
+          "success"    => result,
+          "id"         => h["data"]["order_id"].to_s,
+          "rate"       => BigDecimal.new(rate.to_s),
+          "amount"     => BigDecimal.new(amount.to_s),
+          "order_type" => "sell",
+          "ltimestamp" => Time.now.to_i,
+        }
+      else
+        {
+          "success"    => result,
+          "error"      => h["data"]["code"]
+        }
+      end
     end
 
     private
@@ -92,6 +176,7 @@ module Kaesen
       uri = URI.parse(address)
 
       begin
+        request = Net::HTTP::Get.new(uri, initheader = headers)
         https = initialize_https(uri)
         https.start {|w|
           response = w.get(uri.request_uri)
@@ -104,6 +189,53 @@ module Kaesen
               raise ConnectionFailedException, "Failed to connect to #{@name}."
           end
         }
+      rescue
+        raise
+      end
+    end
+    
+    # Connect to address via https, and return json response.
+    def get_ssl2(path)
+      uri = URI.parse(@url_private + path)
+      
+      nonce = get_nonce
+      secret = @api_secret
+      text = nonce.to_s + "/v1" + path + "" # ACCESS-NONCE、リクエストのパス、クエリパラメータ」 を連結させたもの
+      signature = OpenSSL::HMAC::hexdigest(OpenSSL::Digest.new('sha512'), secret, text)
+      
+      # headers = {
+      #   "ACCESS-KEY" => @api_key,
+      #   "ACCESS-NONCE" => get_nonce.to_s,
+      #   "ACCESS-SIGNATURE" => signature,
+      # }
+
+      begin
+        req = Net::HTTP::Get.new(uri.path)
+        req["ACCESS-KEY"] = @api_key
+        req["ACCESS-NONCE"] = nonce
+        req["ACCESS-SIGNATURE"] = signature
+        https = initialize_https(uri)
+        https.start { |w|
+          res = w.request(req)
+          p res.body
+        }
+        exit
+        # https.start {|w|
+        #   p uri.request_uri
+        #   response = w.get(uri.request_uri)
+        #   # debug
+        #   p response
+        #   exit
+        #   response = w.get(uri.request_uri)
+        #   case response
+        #     when Net::HTTPSuccess
+        #       json = JSON.parse(response.body)
+        #       raise JSONException, response.body if json == nil
+        #       return json
+        #     else
+        #       raise ConnectionFailedException, "Failed to connect to #{@name}."
+        #   end
+        # }
       rescue
         raise
       end
@@ -124,7 +256,8 @@ module Kaesen
 
     def get_sign(req)
       secret = @api_secret
-      text = req.body
+      # text = req.body
+      text = ""
 
       OpenSSL::HMAC::hexdigest(OpenSSL::Digest.new('sha512'), secret, text)
     end
@@ -155,6 +288,44 @@ module Kaesen
       rescue
         raise
       end
+    end
+    
+    def http_request(uri, request)
+      https = Net::HTTP.new(uri.host, uri.port)
+      
+      if @@ssl
+        https.use_ssl = true
+        https.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      end
+      
+      response = https.start do |h|
+        h.request(request)
+      end
+      response.body
+    end
+    
+    def request_for_get(path, query = {})
+      nonce = get_nonce
+      uri = URI.parse @url_private + path
+      signature = get_get_signature(path, @api_secret, nonce, query)
+      # signature = get_sign(query)
+
+      headers = {
+        "Content-Type" => "application/json",
+        "ACCESS-KEY" => @key,
+        "ACCESS-NONCE" => nonce,
+        "ACCESS-SIGNATURE" => signature
+      }
+
+      uri.query = query.empty? ? "" : query.to_query
+      request = Net::HTTP::Get.new(uri.request_uri, initheader = headers)
+      http_request(uri, request)
+    end
+    
+    def get_get_signature(path, secret_key, nonce, query = {})
+      query_string = !query.empty? ? '?' + query.to_query : ''
+      message = nonce.to_s + path + query_string
+      signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha256"), secret_key, message)
     end
 
   end
