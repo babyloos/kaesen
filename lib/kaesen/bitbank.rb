@@ -182,6 +182,17 @@ module Kaesen
         }
       end
     end
+    
+    # 注文キャンセル
+    def cancel(pair, id)
+      have_key?
+      h = @bbcc.cancel_order(pair, id)
+      h = JSON.parse(h)
+      success = h["success"] == 1 ? "true" : "false"
+      {
+        "success" => success
+      }
+    end
 
     private
 
