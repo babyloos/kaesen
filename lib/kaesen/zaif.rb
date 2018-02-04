@@ -348,7 +348,7 @@ module Kaesen
         "currency"      => send_currency,
         "address"       => accept_address,
         "amount"        => amount.to_f.round(4),
-        "opt_fee"       => 0.0001
+        "opt_fee"       => 0.0005
       }
       h = post_ssl(address, body)
       result = h["success"].to_i == 1 ? "true" : "false"
